@@ -1,70 +1,105 @@
 package org.yearup.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.CategoryDao;
 import org.yearup.data.ProductDao;
 import org.yearup.models.Category;
 import org.yearup.models.Product;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
-@RestController  // Marks this class as a REST controller to handle API requests
-@RequestMapping("/categories")  // This will handle all routes starting with /categories
-@CrossOrigin  // This allows cross-origin requests, enabling frontend access from different domains
+@RestController  // Marks this class as a REST controller
+@RequestMapping("/categories")  // URL path for category-related endpoints
+@CrossOrigin  // Allows cross-origin requests (useful for frontend-backend communication)
 public class CategoriesController {
 
-    // Injecting CategoryDao and ProductDao to interact with the database
-    @Autowired
-    private CategoryDao categoryDao;
+    private final CategoryDao categoryDao;  // Interface for Category DAO (Database access)
+    private final ProductDao productDao;  // Interface for Product DAO (Database access)
 
+    // Constructor-based dependency injection for CategoryDao and ProductDao
     @Autowired
-    private ProductDao productDao;
+    public CategoriesController(CategoryDao categoryDao, ProductDao productDao) {
+        this.categoryDao = categoryDao;
+        this.productDao = productDao;
+    }
 
-    // GET /categories - Fetch all categories
+    // GET /categories - Get all categories
     @GetMapping("")  // Handles GET requests to /categories
-    public List<Category> getAll() {
-        // Fetch all categories using the categoryDao
-        return categoryDao.getAllCategories();
+    public ResponseEntity<List<Category>> getAll() {
+        try {
+            List<Category> categories = categoryDao.getAllCategories();  // Fetch all categories
+            return ResponseEntity.ok(categories);  // Return 200 OK with categories
+        } catch (Exception ex) {
+            // If any exception occurs, return a 500 INTERNAL SERVER ERROR
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving categories", ex);
+        }
     }
 
-    // GET /categories/{id} - Fetch a category by ID
+    // GET /categories/{id} - Get category by ID
     @GetMapping("/{id}")  // Handles GET requests to /categories/{id}
-    public Category getById(@PathVariable int id) {
-        // Fetch the category by its ID using categoryDao
-        return categoryDao.getById(id);
+    public ResponseEntity<Category> getById(@PathVariable int id) {
+        Category category = categoryDao.getById(id);  // Fetch category by ID
+        if (category == null) {
+            // If category not found, return 404 NOT FOUND
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found");
+        }
+        return ResponseEntity.ok(category);  // Return 200 OK with the category data
     }
 
-    // GET /categories/{categoryId}/products - Fetch all products for a specific category
+    // GET /categories/{categoryId}/products - Get all products for a specific category
     @GetMapping("/{categoryId}/products")  // Handles GET requests to /categories/{categoryId}/products
-    public List<Product> getProductsById(@PathVariable int categoryId) {
-        // Fetch all products in the category using productDao
-        return productDao.listByCategoryId(categoryId);
+    public ResponseEntity<List<Product>> getProductsByCategoryId(@PathVariable int categoryId) {
+        try {
+            List<Product> products = productDao.listByCategoryId(categoryId);  // Fetch products by category ID
+            return ResponseEntity.ok(products);  // Return 200 OK with the products list
+        } catch (Exception ex) {
+            // Return 500 INTERNAL SERVER ERROR in case of exception
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving products for category", ex);
+        }
     }
 
-    // POST /categories - Add a new category (only accessible by ADMIN users)
-    @PreAuthorize("hasRole('ADMIN')")  // Ensures that only users with the 'ADMIN' role can call this
+    // POST /categories - Add a new category (only accessible by ADMIN)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")  // Only users with ADMIN role can add a category
     @PostMapping("")  // Handles POST requests to /categories
-    public Category addCategory(@RequestBody Category category) {
-        // Add a new category to the database using categoryDao
-        return categoryDao.create(category);
+    public ResponseEntity<Category> addCategory(@RequestBody Category category) {
+        try {
+            Category createdCategory = categoryDao.create(category);  // Create new category in the database
+            return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);  // Return 201 Created with the new category data
+        } catch (Exception ex) {
+            // Return 500 INTERNAL SERVER ERROR if an error occurs
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error creating category", ex);
+        }
     }
 
-    // PUT /categories/{id} - Update an existing category by ID (only accessible by ADMIN users)
-    @PreAuthorize("hasRole('ADMIN')")  // Ensures that only users with the 'ADMIN' role can call this
+    // PUT /categories/{id} - Update an existing category by ID (only accessible by ADMIN)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")  // Only users with ADMIN role can update a category
     @PutMapping("/{id}")  // Handles PUT requests to /categories/{id}
-    public Category updateCategory(@PathVariable int id, @RequestBody Category category) {
-        // Update the category using categoryDao, and return the updated category
-        categoryDao.update(id, category);
-        return categoryDao.getById(id);  // Return the updated category from the database
+    public ResponseEntity<Category> updateCategory(@PathVariable int id, @RequestBody Category category) {
+        try {
+            categoryDao.update(id, category);  // Update the category in the database
+            Category updatedCategory = categoryDao.getById(id);  // Retrieve the updated category
+            return ResponseEntity.ok(updatedCategory);  // Return 200 OK with the updated category data
+        } catch (Exception ex) {
+            // Return 500 INTERNAL SERVER ERROR if an error occurs
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating category", ex);
+        }
     }
 
-    // DELETE /categories/{id} - Delete a category by ID (only accessible by ADMIN users)
-    @PreAuthorize("hasRole('ADMIN')")  // Ensures that only users with the 'ADMIN' role can call this
+    // DELETE /categories/{id} - Delete a category by ID (only accessible by ADMIN)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")  // Only users with ADMIN role can delete a category
     @DeleteMapping("/{id}")  // Handles DELETE requests to /categories/{id}
+    @ResponseStatus(HttpStatus.NO_CONTENT)  // Return 204 No Content status when deletion is successful
     public void deleteCategory(@PathVariable int id) {
-        // Delete the category from the database using categoryDao
-        categoryDao.delete(id);
+        try {
+            categoryDao.delete(id);  // Delete the category by ID from the database
+        } catch (Exception ex) {
+            // Return 500 INTERNAL SERVER ERROR if an error occurs
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting category", ex);
+        }
     }
 }
