@@ -10,12 +10,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
-@RestController  // Marks this class as a REST controller (to handle API requests)
-@RequestMapping("/categories")  // Base URL for category operations, e.g., /categories
-@CrossOrigin  // Allows cross-origin requests, so the API can be accessed from different domains
+@RestController  // Marks this class as a REST controller to handle API requests
+@RequestMapping("/categories")  // This will handle all routes starting with /categories
+@CrossOrigin  // This allows cross-origin requests, enabling frontend access from different domains
 public class CategoriesController {
 
-    // Injecting the CategoryDao and ProductDao to interact with the database
+    // Injecting CategoryDao and ProductDao to interact with the database
     @Autowired
     private CategoryDao categoryDao;
 
