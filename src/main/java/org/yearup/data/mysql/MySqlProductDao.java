@@ -150,6 +150,13 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
     // Update an existing product
     @Override
     public void update(int productId, Product product) {
+        // Check if the product exists
+        Product existingProduct = getById(productId);
+        if (existingProduct == null) {
+            throw new RuntimeException("Product not found for update");
+        }
+
+        // SQL query to update the product fields
         String sql = "UPDATE products SET name = ?, price = ?, category_id = ?, description = ?, color = ?, " +
                 "image_url = ?, stock = ?, featured = ? WHERE product_id = ?";
 
@@ -165,9 +172,12 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
             statement.setBoolean(8, product.isFeatured());
             statement.setInt(9, productId);
 
-            statement.executeUpdate();
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new RuntimeException("Failed to update product");
+            }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error updating product: " + e.getMessage(), e);
         }
     }
 

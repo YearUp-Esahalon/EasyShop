@@ -63,7 +63,7 @@ public class CategoriesController {
         }
     }
 
-    // POST /categories - Add a new category (only accessible by ADMIN)
+    // POST /categories - Add a new category (Admin ONLYYY!!!)
     @PreAuthorize("hasRole('ROLE_ADMIN')")  // Only users with ADMIN role can add a category
     @PostMapping("")  // Handles POST requests to /categories
     public ResponseEntity<Category> addCategory(@RequestBody Category category) {
