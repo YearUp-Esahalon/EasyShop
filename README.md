@@ -1,6 +1,7 @@
 # EasyShop
 
-EasyShop is a powerful e-commerce platform that offers users a smooth and efficient online shopping experience. Developed with Java, Spring Boot, and MySQL, the backend API supports key functionalities like user authentication, product management, shopping cart handling, and user profile management. Version 2 of EasyShop focuses on resolving previous bugs, adding new features, and improving overall performance and functionality.## Table of Contents
+EasyShop is a powerful e-commerce platform that offers users a smooth and efficient online shopping experience. Developed with Java, Spring Boot, and MySQL, the backend API supports key functionalities like user authentication, product management, shopping cart handling, and user profile management. Version 2 of EasyShop focuses on resolving previous bugs, adding new features, and improving overall performance and functionality.
+## Table of Contents
 
 - [Application Structure](#application-structure)
 - [Features](#features)
