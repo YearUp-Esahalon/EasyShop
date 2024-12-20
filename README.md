@@ -53,7 +53,7 @@ Implemented RESTful endpoints for managing product categories:
 - **Bug 1**: Fixed incorrect product search results by optimizing SQL queries and handling query parameters correctly.
 - **Bug 2**: Resolved duplication issues during product updates by ensuring existing products are updated instead of creating new entries.
 
-### Phase 3 - User Profile
+### Phase 4 - User Profile
 Added functionality to manage user profiles:
 - `GET /profile`: Fetch user profile details.
 - `PUT /profile`: Update profile information.
